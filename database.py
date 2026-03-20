@@ -51,8 +51,9 @@ class DatabaseManager:
             logger.info("Disconnected from MongoDB")
     
 
+
     def _create_indexes(self) -> None:
-    """Create database indexes for optimal performance."""
+        """Create database indexes for optimal performance."""
     
     # Users collection indexes
     self.users.create_index("user_id", unique=True)
