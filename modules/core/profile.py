@@ -76,9 +76,9 @@ class ProfileHandler:
         # Get job info
         job_info = user.get("job", "Unemployed")
         
-        # Build profile text
+        # Build profile text (FIXED LINE HERE)
         profile_text = (
-            f"{'👤' if is_own else '👥'} *{'Your' if is_own else user['name'] + '''s'} Profile*\n"
+            f"{'👤' if is_own else '👥'} *{'Your' if is_own else user['name'] + \"'s\"} Profile*\n"
             f"{'─' * 30}\n\n"
             f"📛 *Name:* {user['name']}\n"
             f"🔤 *Username:* @{user['username']}\n"
