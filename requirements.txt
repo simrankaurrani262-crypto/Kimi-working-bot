@@ -1,0 +1,24 @@
+# Telegram RPG Bot - Requirements
+# =================================
+
+# Core Framework
+python-telegram-bot==20.7
+
+# Database
+pymongo==4.6.1
+
+# Image Processing
+Pillow==10.1.0
+
+# Graph Generation
+networkx==3.2.1
+matplotlib==3.8.2
+
+# Scheduler
+APScheduler==3.10.4
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Additional Utilities
+numpy==1.26.2
