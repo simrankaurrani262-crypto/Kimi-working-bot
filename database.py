@@ -383,4 +383,4 @@ class LogRepository:
 def init_database() -> bool:
     """Initialize database connection."""
     return db.connect()
-            
+        
