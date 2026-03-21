@@ -97,10 +97,15 @@ class TreeHandler:
     @staticmethod
     async def _show_text_tree(update: Update, user: dict) -> None:
         """Show text-based family tree."""
-        user_id = user["user_id"]
+        if not user:
+            await update.message.reply_text("❌ User not found!")
+            return
+        
+        user_id = user.get("user_id")
+        user_name = user.get('name', user.get('username', 'Unknown'))
         
         # Build ASCII tree
-        tree_text = f"🌳 *Family Tree - {user['name']}*\n\n"
+        tree_text = f"🌳 *Family Tree - {user_name}*\n\n"
         
         # Get all family members
         grandparents = []
@@ -138,36 +143,41 @@ class TreeHandler:
         if grandparents:
             tree_text += "*Grandparents:*\n"
             for gp in grandparents:
-                tree_text += f"  👴👵 {gp['name']}\n"
+                gp_name = gp.get('name', gp.get('username', 'Unknown'))
+                tree_text += f"  👴👵 {gp_name}\n"
             tree_text += "    │\n"
         
         # Parents level
         if parents:
             tree_text += "*Parents:*\n"
             for p in parents:
-                tree_text += f"  👨‍👩 {p['name']}\n"
+                p_name = p.get('name', p.get('username', 'Unknown'))
+                tree_text += f"  👨‍👩 {p_name}\n"
             tree_text += "    │\n"
         
         # User level
         tree_text += "*You:*\n"
         if partner:
-            tree_text += f"  💑 {user['name']} 💕 {partner['name']}\n"
+            partner_name = partner.get('name', partner.get('username', 'Unknown'))
+            tree_text += f"  💑 {user_name} 💕 {partner_name}\n"
         else:
-            tree_text += f"  👤 {user['name']}\n"
+            tree_text += f"  👤 {user_name}\n"
         
         # Children level
         if children:
             tree_text += "    │\n"
             tree_text += "*Children:*\n"
             for child in children:
-                tree_text += f"  👶 {child['name']}\n"
+                child_name = child.get('name', child.get('username', 'Unknown'))
+                tree_text += f"  👶 {child_name}\n"
         
         # Grandchildren level
         if grandchildren:
             tree_text += "    │\n"
             tree_text += "*Grandchildren:*\n"
             for gc in grandchildren:
-                tree_text += f"  🍼 {gc['name']}\n"
+                gc_name = gc.get('name', gc.get('username', 'Unknown'))
+                tree_text += f"  🍼 {gc_name}\n"
         
         # Summary
         tree_text += f"\n📊 *Summary:*\n"
@@ -202,8 +212,14 @@ class TreeHandler:
         user_id = query.from_user.id
         user = await UserRepository.get_user(user_id)
         
+        if not user:
+            await query.edit_message_text("❌ User not found!")
+            return
+        
+        user_name = user.get('name', user.get('username', 'Unknown'))
+        
         # Build ASCII tree (similar to above)
-        tree_text = f"🌳 *Family Tree - {user['name']}*\n\n"
+        tree_text = f"🌳 *Family Tree - {user_name}*\n\n"
         
         grandparents = []
         parents = []
@@ -230,26 +246,30 @@ class TreeHandler:
         if grandparents:
             tree_text += "*Grandparents:*\n"
             for gp in grandparents:
-                tree_text += f"  👴👵 {gp['name']}\n"
+                gp_name = gp.get('name', gp.get('username', 'Unknown'))
+                tree_text += f"  👴👵 {gp_name}\n"
             tree_text += "    │\n"
         
         if parents:
             tree_text += "*Parents:*\n"
             for p in parents:
-                tree_text += f"  👨‍👩 {p['name']}\n"
+                p_name = p.get('name', p.get('username', 'Unknown'))
+                tree_text += f"  👨‍👩 {p_name}\n"
             tree_text += "    │\n"
         
         tree_text += "*You:*\n"
         if partner:
-            tree_text += f"  💑 {user['name']} 💕 {partner['name']}\n"
+            partner_name = partner.get('name', partner.get('username', 'Unknown'))
+            tree_text += f"  💑 {user_name} 💕 {partner_name}\n"
         else:
-            tree_text += f"  👤 {user['name']}\n"
+            tree_text += f"  👤 {user_name}\n"
         
         if children:
             tree_text += "    │\n"
             tree_text += "*Children:*\n"
             for child in children:
-                tree_text += f"  👶 {child['name']}\n"
+                child_name = child.get('name', child.get('username', 'Unknown'))
+                tree_text += f"  👶 {child_name}\n"
         
         keyboard = [
             [
@@ -316,3 +336,4 @@ class TreeHandler:
             await TreeHandler._show_tree(query)
         elif data == "tree_image":
             await TreeHandler._send_tree_image(query)
+                
