@@ -50,59 +50,57 @@ class DatabaseManager:
             self._client.close()
             logger.info("Disconnected from MongoDB")
     
-
-
     def _create_indexes(self) -> None:
         """Create database indexes for optimal performance."""
-    
-    # Users collection indexes
-    self.users.create_index("user_id", unique=True)
-    self.users.create_index("username")
-    self.users.create_index([("money", DESCENDING)])
-    self.users.create_index([("level", DESCENDING)])
-    self.users.create_index([("reputation", DESCENDING)])
-    
-    # Families collection indexes
-    self.families.create_index("family_id", unique=True)
-    self.families.create_index("members")
-    self.families.create_index("creator_id")
-    
-    # Friends collection indexes
-    self.friends.create_index([("user_id", ASCENDING), ("friend_id", ASCENDING)], unique=True)
-    
-    # Economy collection indexes
-    self.economy.create_index("user_id", unique=True)
-    self.economy.create_index([("total_earned", DESCENDING)])
-    
-    # Inventory collection indexes
-    self.inventory.create_index("user_id")
-    self.inventory.create_index("item_id")
-    
-    # Gardens collection indexes
-    self.gardens.create_index("user_id", unique=True)
-    
-    # Factory collection indexes
-    self.factory.create_index("user_id", unique=True)
-    
-    # Market collection indexes
-    self.market.create_index("seller_id")
-    self.market.create_index("item_id")
-    self.market.create_index([("price", ASCENDING)])
-    
-    # Games collection indexes
-    self.games.create_index("user_id")
-    self.games.create_index("game_type")
-    
-    # Stats collection indexes
-    self.stats.create_index("user_id", unique=True)
-    self.stats.create_index([("activity_score", DESCENDING)])
-    
-    # Logs collection indexes
-    self.logs.create_index([("timestamp", DESCENDING)])
-    self.logs.create_index("user_id")
-    self.logs.create_index("action")
-    
-    logger.info("Database indexes created successfully")
+        
+        # Users collection indexes
+        self.users.create_index("user_id", unique=True)
+        self.users.create_index("username")
+        self.users.create_index([("money", DESCENDING)])
+        self.users.create_index([("level", DESCENDING)])
+        self.users.create_index([("reputation", DESCENDING)])
+        
+        # Families collection indexes
+        self.families.create_index("family_id", unique=True)
+        self.families.create_index("members")
+        self.families.create_index("creator_id")
+        
+        # Friends collection indexes
+        self.friends.create_index([("user_id", ASCENDING), ("friend_id", ASCENDING)], unique=True)
+        
+        # Economy collection indexes
+        self.economy.create_index("user_id", unique=True)
+        self.economy.create_index([("total_earned", DESCENDING)])
+        
+        # Inventory collection indexes
+        self.inventory.create_index("user_id")
+        self.inventory.create_index("item_id")
+        
+        # Gardens collection indexes
+        self.gardens.create_index("user_id", unique=True)
+        
+        # Factory collection indexes
+        self.factory.create_index("user_id", unique=True)
+        
+        # Market collection indexes
+        self.market.create_index("seller_id")
+        self.market.create_index("item_id")
+        self.market.create_index([("price", ASCENDING)])
+        
+        # Games collection indexes
+        self.games.create_index("user_id")
+        self.games.create_index("game_type")
+        
+        # Stats collection indexes
+        self.stats.create_index("user_id", unique=True)
+        self.stats.create_index([("activity_score", DESCENDING)])
+        
+        # Logs collection indexes
+        self.logs.create_index([("timestamp", DESCENDING)])
+        self.logs.create_index("user_id")
+        self.logs.create_index("action")
+        
+        logger.info("Database indexes created successfully")
     
     @property
     def db(self) -> Database:
@@ -365,3 +363,4 @@ class LogRepository:
 def init_database() -> bool:
     """Initialize database connection."""
     return db.connect()
+        
