@@ -50,37 +50,24 @@ class DatabaseManager:
             self._client.close()
             logger.info("Disconnected from MongoDB")
 
+    def _drop_conflicting_index(self, collection, index_name: str):
+        """Drop an index if it exists to avoid conflicts."""
+        try:
+            # Check if index exists
+            indexes = collection.list_indexes()
+            index_names = [idx['name'] for idx in indexes]
+            if index_name in index_names:
+                collection.drop_index(index_name)
+                logger.info(f"Dropped conflicting index: {index_name}")
+        except Exception as e:
+            logger.debug(f"Could not drop index {index_name}: {e}")
+
     def _create_index_safe(self, collection, field, unique=False, sparse=False):
         """Safely create index with error handling."""
         try:
             collection.create_index(field, unique=unique, sparse=sparse)
         except (OperationFailure, DuplicateKeyError) as e:
-            logger.warning(f"Index creation skipped (may already exist or data conflict): {e}")
-
-    def _create_unique_index_with_null_filter(self, collection, field_name: str):
-        """Create a unique index that properly handles null values.
-        
-        This uses a partial filter expression to exclude documents where
-        the field is null or missing, preventing duplicate key errors.
-        """
-        try:
-            collection.create_index(
-                field_name,
-                unique=True,
-                partialFilterExpression={field_name: {"$type": "string"}}
-            )
-            logger.info(f"Created unique index on {collection.name}.{field_name} with null filter")
-        except (OperationFailure, DuplicateKeyError) as e:
-            logger.warning(f"Index creation skipped for {collection.name}.{field_name}: {e}")
-
-    def _clean_null_family_ids(self) -> None:
-        """Remove documents with null family_id before creating unique index."""
-        try:
-            result = self.families.delete_many({"$or": [{"family_id": None}, {"family_id": {"$exists": False}}]})
-            if result.deleted_count > 0:
-                logger.info(f"Cleaned {result.deleted_count} documents with null/missing family_id")
-        except Exception as e:
-            logger.warning(f"Could not clean null family_id documents: {e}")
+            logger.warning(f"Index creation skipped: {e}")
 
     def _create_indexes(self) -> None:
         """Create database indexes for optimal performance."""
@@ -92,9 +79,9 @@ class DatabaseManager:
         self._create_index_safe(self.users, [("level", DESCENDING)])
         self._create_index_safe(self.users, [("reputation", DESCENDING)])
 
-        # Families collection indexes - clean nulls first, then create index
-        self._clean_null_family_ids()
-        self._create_unique_index_with_null_filter(self.families, "family_id")
+        # Families collection - drop old conflicting index first, then create new one
+        self._drop_conflicting_index(self.families, "family_id_1")
+        self._create_index_safe(self.families, "family_id", unique=True, sparse=True)
         self._create_index_safe(self.families, "members")
         self._create_index_safe(self.families, "creator_id")
 
