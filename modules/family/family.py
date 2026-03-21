@@ -35,9 +35,11 @@ class FamilyHandler:
         family_text = f"👨‍👩‍👧‍👦 *Family Information*\n\n"
         
         if family:
+            creator = await UserRepository.get_user(family['creator_id'])
+            creator_name = creator.get('name', creator.get('username', 'Unknown')) if creator else 'Unknown'
             family_text += (
                 f"🏠 *Family Name:* {family['name']}\n"
-                f"👑 *Creator:* {(await UserRepository.get_user(family['creator_id']))['name']}\n"
+                f"👑 *Creator:* {creator_name}\n"
                 f"👥 *Members:* {len(family['members'])}\n"
                 f"💰 *Total Wealth:* {format_money(family.get('total_wealth', 0))}\n"
                 f"⭐ *Reputation:* {family.get('reputation', 0)}\n\n"
@@ -49,7 +51,8 @@ class FamilyHandler:
                 member = await UserRepository.get_user(member_id)
                 if member:
                     role = "👑" if member_id == family['creator_id'] else "👤"
-                    family_text += f"  {role} {member['name']}\n"
+                    member_name = member.get('name', member.get('username', 'Unknown'))
+                    family_text += f"  {role} {member_name}\n"
             
             if len(family['members']) > 10:
                 family_text += f"  ... and {len(family['members']) - 10} more\n"
@@ -60,7 +63,8 @@ class FamilyHandler:
         if user.get("partner"):
             partner = await UserRepository.get_user(user["partner"])
             if partner:
-                family_text += f"💍 Partner: {partner['name']}\n"
+                partner_name = partner.get('name', partner.get('username', 'Unknown'))
+                family_text += f"💍 Partner: {partner_name}\n"
         else:
             family_text += f"💍 Partner: None\n"
         
@@ -69,7 +73,8 @@ class FamilyHandler:
             for parent_id in user["parents"]:
                 parent = await UserRepository.get_user(parent_id)
                 if parent:
-                    parents_names.append(parent['name'])
+                    parent_name = parent.get('name', parent.get('username', 'Unknown'))
+                    parents_names.append(parent_name)
             family_text += f"👨‍👩 Parents: {', '.join(parents_names)}\n"
         else:
             family_text += f"👨‍👩 Parents: None\n"
@@ -79,7 +84,8 @@ class FamilyHandler:
             for child_id in user["children"][:5]:
                 child = await UserRepository.get_user(child_id)
                 if child:
-                    family_text += f"    • {child['name']}\n"
+                    child_name = child.get('name', child.get('username', 'Unknown'))
+                    family_text += f"    • {child_name}\n"
             if len(user['children']) > 5:
                 family_text += f"    ... and {len(user['children']) - 5} more\n"
         else:
@@ -157,6 +163,10 @@ class FamilyHandler:
         user_id = query.from_user.id
         user = await UserRepository.get_user(user_id)
         
+        if not user:
+            await query.edit_message_text("❌ User not found!")
+            return
+        
         family_text = f"👨‍👩‍👧‍👦 *Family Information*\n\n"
         
         # Personal family info
@@ -165,7 +175,8 @@ class FamilyHandler:
         if user.get("partner"):
             partner = await UserRepository.get_user(user["partner"])
             if partner:
-                family_text += f"💍 Partner: {partner['name']}\n"
+                partner_name = partner.get('name', partner.get('username', 'Unknown'))
+                family_text += f"💍 Partner: {partner_name}\n"
         else:
             family_text += f"💍 Partner: None\n"
         
@@ -174,7 +185,8 @@ class FamilyHandler:
             for parent_id in user["parents"]:
                 parent = await UserRepository.get_user(parent_id)
                 if parent:
-                    parents_names.append(parent['name'])
+                    parent_name = parent.get('name', parent.get('username', 'Unknown'))
+                    parents_names.append(parent_name)
             family_text += f"👨‍👩 Parents: {', '.join(parents_names)}\n"
         else:
             family_text += f"👨‍👩 Parents: None\n"
@@ -213,6 +225,10 @@ class FamilyHandler:
         user_id = query.from_user.id
         user = await UserRepository.get_user(user_id)
         
+        if not user:
+            await query.edit_message_text("❌ User not found!")
+            return
+        
         if not user.get("parents"):
             await query.edit_message_text(
                 "👨‍👩 *Your Parents*\n\n"
@@ -227,11 +243,12 @@ class FamilyHandler:
         for parent_id in user["parents"]:
             parent = await UserRepository.get_user(parent_id)
             if parent:
+                parent_name = parent.get('name', parent.get('username', 'Unknown'))
                 text += (
-                    f"👤 *{parent['name']}*\n"
-                    f"   Username: @{parent['username']}\n"
-                    f"   Level: {parent['level']}\n"
-                    f"   Money: {format_money(parent['money'])}\n\n"
+                    f"👤 *{parent_name}*\n"
+                    f"   Username: @{parent.get('username', 'N/A')}\n"
+                    f"   Level: {parent.get('level', 1)}\n"
+                    f"   Money: {format_money(parent.get('money', 0))}\n\n"
                 )
         
         keyboard = [
@@ -250,6 +267,10 @@ class FamilyHandler:
         user_id = query.from_user.id
         user = await UserRepository.get_user(user_id)
         
+        if not user:
+            await query.edit_message_text("❌ User not found!")
+            return
+        
         if not user.get("children"):
             await query.edit_message_text(
                 "👶 *Your Children*\n\n"
@@ -264,11 +285,12 @@ class FamilyHandler:
         for child_id in user["children"]:
             child = await UserRepository.get_user(child_id)
             if child:
+                child_name = child.get('name', child.get('username', 'Unknown'))
                 text += (
-                    f"👤 *{child['name']}*\n"
-                    f"   Username: @{child['username']}\n"
-                    f"   Level: {child['level']}\n"
-                    f"   Money: {format_money(child['money'])}\n\n"
+                    f"👤 *{child_name}*\n"
+                    f"   Username: @{child.get('username', 'N/A')}\n"
+                    f"   Level: {child.get('level', 1)}\n"
+                    f"   Money: {format_money(child.get('money', 0))}\n\n"
                 )
         
         keyboard = [
@@ -303,3 +325,4 @@ class FamilyHandler:
             parse_mode='Markdown',
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
+        
