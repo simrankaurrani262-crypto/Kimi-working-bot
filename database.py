@@ -10,7 +10,7 @@ from datetime import datetime
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.collection import Collection
 from pymongo.database import Database
-from pymongo.errors import DuplicateKeyError, ConnectionFailure
+from pymongo.errors import DuplicateKeyError, ConnectionFailure, OperationFailure
 
 from config import db_config, game_config
 
@@ -50,55 +50,62 @@ class DatabaseManager:
             self._client.close()
             logger.info("Disconnected from MongoDB")
     
+    def _create_index_safe(self, collection, field, unique=False, sparse=False):
+        """Safely create index with error handling."""
+        try:
+            collection.create_index(field, unique=unique, sparse=sparse)
+        except OperationFailure as e:
+            logger.warning(f"Index creation skipped (may already exist): {e}")
+    
     def _create_indexes(self) -> None:
         """Create database indexes for optimal performance."""
         
         # Users collection indexes
-        self.users.create_index("user_id", unique=True)
-        self.users.create_index("username")
-        self.users.create_index([("money", DESCENDING)])
-        self.users.create_index([("level", DESCENDING)])
-        self.users.create_index([("reputation", DESCENDING)])
+        self._create_index_safe(self.users, "user_id", unique=True, sparse=True)
+        self._create_index_safe(self.users, "username")
+        self._create_index_safe(self.users, [("money", DESCENDING)])
+        self._create_index_safe(self.users, [("level", DESCENDING)])
+        self._create_index_safe(self.users, [("reputation", DESCENDING)])
         
         # Families collection indexes
-        self.families.create_index("family_id", unique=True)
-        self.families.create_index("members")
-        self.families.create_index("creator_id")
+        self._create_index_safe(self.families, "family_id", unique=True, sparse=True)
+        self._create_index_safe(self.families, "members")
+        self._create_index_safe(self.families, "creator_id")
         
         # Friends collection indexes
-        self.friends.create_index([("user_id", ASCENDING), ("friend_id", ASCENDING)], unique=True)
+        self._create_index_safe(self.friends, [("user_id", ASCENDING), ("friend_id", ASCENDING)], unique=True)
         
         # Economy collection indexes
-        self.economy.create_index("user_id", unique=True)
-        self.economy.create_index([("total_earned", DESCENDING)])
+        self._create_index_safe(self.economy, "user_id", unique=True, sparse=True)
+        self._create_index_safe(self.economy, [("total_earned", DESCENDING)])
         
         # Inventory collection indexes
-        self.inventory.create_index("user_id")
-        self.inventory.create_index("item_id")
+        self._create_index_safe(self.inventory, "user_id")
+        self._create_index_safe(self.inventory, "item_id")
         
         # Gardens collection indexes
-        self.gardens.create_index("user_id", unique=True)
+        self._create_index_safe(self.gardens, "user_id", unique=True, sparse=True)
         
         # Factory collection indexes
-        self.factory.create_index("user_id", unique=True)
+        self._create_index_safe(self.factory, "user_id", unique=True, sparse=True)
         
         # Market collection indexes
-        self.market.create_index("seller_id")
-        self.market.create_index("item_id")
-        self.market.create_index([("price", ASCENDING)])
+        self._create_index_safe(self.market, "seller_id")
+        self._create_index_safe(self.market, "item_id")
+        self._create_index_safe(self.market, [("price", ASCENDING)])
         
         # Games collection indexes
-        self.games.create_index("user_id")
-        self.games.create_index("game_type")
+        self._create_index_safe(self.games, "user_id")
+        self._create_index_safe(self.games, "game_type")
         
         # Stats collection indexes
-        self.stats.create_index("user_id", unique=True)
-        self.stats.create_index([("activity_score", DESCENDING)])
+        self._create_index_safe(self.stats, "user_id", unique=True, sparse=True)
+        self._create_index_safe(self.stats, [("activity_score", DESCENDING)])
         
         # Logs collection indexes
-        self.logs.create_index([("timestamp", DESCENDING)])
-        self.logs.create_index("user_id")
-        self.logs.create_index("action")
+        self._create_index_safe(self.logs, [("timestamp", DESCENDING)])
+        self._create_index_safe(self.logs, "user_id")
+        self._create_index_safe(self.logs, "action")
         
         logger.info("Database indexes created successfully")
     
